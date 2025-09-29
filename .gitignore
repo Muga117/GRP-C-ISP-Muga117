@@ -1,0 +1,5 @@
+ROM/
+ppo_sonic_tensorboard/
+__pycache__/
+ppo_sonic3.zip
+ppo.py:Zone.Identifier
