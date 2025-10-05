@@ -1,0 +1,11 @@
+ROM/
+
+ppo_sonic_tensorboard/
+
+__pycache__/
+
+ppo_sonic3.zip
+
+vec_normalize.pkl
+
+videos/
