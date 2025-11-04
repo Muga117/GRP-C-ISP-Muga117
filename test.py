@@ -7,17 +7,18 @@ from stable_baselines3.common.vec_env import (
     VecNormalize
 )
 from paths import MODEL_PATH, VIDEOS_PATH
-from env import make_env
+from env import make_env_fn
+import os
 
 def test_agent():
     print("Creating Test Environment...")
-    test_env = DummyVecEnv([lambda: make_env(render_mode="rgb_array")])
+    test_env = DummyVecEnv([lambda: make_env_fn(render_mode="rgb_array")])
     test_env = VecFrameStack(test_env, n_stack=4)      
     test_env = VecVideoRecorder(
         test_env,
         video_folder=VIDEOS_PATH,
         record_video_trigger=lambda x: True,  
-        video_length=10000                    
+        video_length=20000                   
     )
 
     print("Testing trained agent...")
