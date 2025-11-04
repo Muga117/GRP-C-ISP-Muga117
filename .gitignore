@@ -1,6 +1,6 @@
 ROM/
 
-ppo_sonic_tensorboard/
+logs/
 
 __pycache__/
 
