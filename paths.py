@@ -1,4 +1,3 @@
-MODEL_PATH = "ppo_sonic3.zip"
-VECNORM_PATH = "vec_normalize.pkl"
+MODEL_PATH = "model/ppo_sonic3.zip"
 VIDEOS_PATH = "videos/"
 LOGS_PATH = "logs/"

@@ -1,9 +1,11 @@
 import random
+import retro
 import cv2
 import gymnasium as gym
 from gymnasium.spaces import Box
 import numpy as np
 from gymnasium import ObservationWrapper
+from gymnasium import Wrapper
 
 
 class WarpFrame(ObservationWrapper):
@@ -27,29 +29,27 @@ class WarpFrame(ObservationWrapper):
         return obs
 
 class AllowBacktracking(gym.Wrapper):
-    """Reward forward progress; ignore backward movement"""
+    """
+    Use deltas in max(X) as the reward, rather than deltas
+    in X. This way, agents are not discouraged too heavily
+    from exploring backwards if there is no way to advance
+    head-on in the level.
+    """
     def __init__(self, env):
-        super().__init__(env)
+        super(AllowBacktracking, self).__init__(env)
         self._cur_x = 0
         self._max_x = 0
 
-        # Unwrap to the base retro environment
-        base_env = env
-        while hasattr(base_env, "env"):
-            base_env = base_env.env
-        self._base_env = base_env
-
-    def reset(self, **kwargs):
+    def reset(self, **kwargs): # pylint: disable=E0202
         self._cur_x = 0
         self._max_x = 0
         return self.env.reset(**kwargs)
 
-    def step(self, action):
+    def step(self, action): # pylint: disable=E0202
         obs, rew, terminated, truncated, info = self.env.step(action)
-        # Use base retro environment to access 'x'
-        x = self._base_env.data.lookup_value("x")
-        rew = max(0, x - self._max_x)
-        self._max_x = max(self._max_x, x)
+        self._cur_x += rew
+        rew = max(0, self._cur_x - self._max_x)
+        self._max_x = max(self._max_x, self._cur_x)
         return obs, rew, terminated, truncated, info
     
     
@@ -88,6 +88,7 @@ class SonicDiscretizer(Discretizer):
         super().__init__(
             env=env,
             combos=[
+                ["UP"],
                 ["LEFT"],
                 ["RIGHT"],
                 ["LEFT", "DOWN"],
@@ -109,23 +110,44 @@ class RewardScaler(gym.RewardWrapper):
         return reward * 0.01
 
 class StochasticFrameSkip(gym.Wrapper):
-    """Random frame skip for smoother training"""
-    def __init__(self, env, n_min=2, n_max=5):
-        super().__init__(env)
-        self.n_min = n_min
-        self.n_max = n_max
+    def __init__(self, env, n, stickprob):
+        gym.Wrapper.__init__(self, env)
+        self.n = n
+        self.stickprob = stickprob
+        self.curac = None
+        self.rng = np.random.RandomState()
+        self.supports_want_render = hasattr(env, "supports_want_render")
 
-    def step(self, action):
-        n = random.randint(self.n_min, self.n_max)
-        total_reward = 0.0
-        done = False
+    def reset(self, **kwargs):
+        self.curac = None
+        return self.env.reset(**kwargs)
+
+    def step(self, ac):
+        terminated = False
         truncated = False
-        for _ in range(n):
-            obs, reward, terminated, truncated_step, info = self.env.step(action)
-            total_reward += reward
-            if terminated:
-                done = True
-                terminated = True
+        totrew = 0
+        for i in range(self.n):
+            # First step after reset, use action
+            if self.curac is None:
+                self.curac = ac
+            # First substep, delay with probability=stickprob
+            elif i == 0:
+                if self.rng.rand() > self.stickprob:
+                    self.curac = ac
+            # Second substep, new action definitely kicks in
+            elif i == 1:
+                self.curac = ac
+            if self.supports_want_render and i < self.n - 1:
+                ob, rew, terminated, truncated, info = self.env.step(
+                    self.curac,
+                    want_render=False,
+                )
+            else:
+                ob, rew, terminated, truncated, info = self.env.step(self.curac)
+            totrew += rew
+            if terminated or truncated:
                 break
-            truncated |= truncated_step
-        return obs, total_reward, terminated, truncated, info
+        return ob, totrew, terminated, truncated, info
+    
+
+
