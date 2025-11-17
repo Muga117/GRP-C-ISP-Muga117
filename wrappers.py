@@ -149,33 +149,5 @@ class StochasticFrameSkip(gym.Wrapper):
                 break
         return ob, totrew, terminated, truncated, info
     
-class RandomLevelWrapper(gym.Wrapper):
-    def __init__(self, states):
-        self.states = states
-        self.current_state = np.random.choice(states)
-        env = retro.make(
-            game='SonicAndKnuckles3-Genesis',
-            state=self.current_state,
-            scenario='contest',
-            use_restricted_actions=retro.Actions.ALL,
-            players=1,
-            render_mode=None
-            #render_mode='human'
-        )
-        super().__init__(env)
 
-    def reset(self, **kwargs):
-        # Pick a new random level at each reset
-        self.current_state = np.random.choice(self.states)
-        self.env.close()
-        self.env = retro.make(
-            game='SonicAndKnuckles3-Genesis',
-            state=self.current_state,
-            scenario='contest',
-            use_restricted_actions=retro.Actions.ALL,
-            players=1,
-            render_mode=None
-            #render_mode='human'
-        )
-        #print(f"[Env Reset] Loaded level: {self.current_state}")
-        return self.env.reset(**kwargs)
+
