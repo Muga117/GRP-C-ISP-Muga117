@@ -1,35 +1,30 @@
 import os
 import numpy as np
-import retro
 from stable_baselines3 import PPO
-from env import make_env, make_env_fn, wrap_env
-import env
+from env import GAME_TO_ZONES, ZONES, make_train_env, wrap_env, make_env
 from paths import MODEL_PATH, VECNORM_PATH, LOGS_PATH
 from callbacks import SingleCheckpointCallback
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import (
     SubprocVecEnv,
     VecFrameStack,
-    VecNormalize,
     VecMonitor
 )
 
-NUM_WORKERS = 16
-
-def train_agent(total_timesteps=5_000_000):
-    train_env = SubprocVecEnv([make_env_fn for _ in range(NUM_WORKERS)])
+def train_agent(total_timesteps=10_000_000):
+    env_fns = []
+    for game, zones in GAME_TO_ZONES.items():
+        for zone in zones:
+            def make_env_fn(game=game, zone=zone):
+                def _init():
+                    return wrap_env(make_env(game=game, state=zone, render_mode=None))
+                return _init
+            env_fns.append(make_env_fn())
+    
+    train_env = SubprocVecEnv(env_fns)
     train_env = VecMonitor(train_env, filename="logs/monitor")
     train_env = VecFrameStack(train_env, n_stack=4)
     
-    # Load VecNormalize stats if available
-    if os.path.exists(VECNORM_PATH):
-        print(f"Loading VecNormalize stats from {VECNORM_PATH}")
-        train_env = VecNormalize.load(VECNORM_PATH, train_env)
-        train_env.training = True  
-    else:
-        print("No VecNormalize stats found, creating new one.")
-        train_env = VecNormalize(train_env, norm_obs=False, norm_reward=True, gamma=0.99)
-
     # PPO agent 
     if os.path.exists(MODEL_PATH):
         print("Loading existing model from", MODEL_PATH)
@@ -40,8 +35,8 @@ def train_agent(total_timesteps=5_000_000):
         model = PPO(
             "CnnPolicy",
             train_env,
-            learning_rate=lambda _: 7.5e-5,
-            n_steps=4096,
+            learning_rate=lambda _: 2e-4,
+            n_steps=2048,
             batch_size=1024,
             n_epochs=4,
             gamma=0.99,
@@ -59,10 +54,11 @@ def train_agent(total_timesteps=5_000_000):
 
     print("Saving Model...")
     model.save(MODEL_PATH)
-    train_env.save(VECNORM_PATH)
-
+   
     train_env.close()
     print("Training Complete.")
+
+
     
 
 
