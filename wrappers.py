@@ -1,12 +1,8 @@
-import random
-import retro
 import cv2
 import gymnasium as gym
 from gymnasium.spaces import Box
 import numpy as np
 from gymnasium import ObservationWrapper
-from gymnasium import Wrapper
-
 
 class WarpFrame(ObservationWrapper):
     """Resize and optionally grayscale frames"""
