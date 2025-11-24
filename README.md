@@ -1,5 +1,9 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/inoLPW_E)
-![Alt Text](https://i.imgur.com/be1s8Uq.gif)
+
+<sub>Model Playing Sonic 3 and Knuckles</sub>
+
+![Alt Text](model/model.gif)
+
 # Project Overview
 This project aims to train a PPO agent to play Sonic levels from Sonic The Hedghehog, Sonic The Hedghehog 2 and Sonic 3 and Knuckles.
 
@@ -58,16 +62,22 @@ cd PlatformerRLAgent/
 Place your Sonic ROMS obtained online in ROMS/ and then import them into Stable Retro.
 ```
 cd ROMS/
-!python3 -m retro.import
+python3 -m retro.import
 ```
 
 Train a New Model
 ```
 python main.py --mode train
 ```
+Access Logs
+```
+tensorboard --logdir logs/
+```
 Test the model
 ```
-python main.py --mode test
+python main.py --mode test --game SonicTheHedgehog-Genesis --level GreenHillZone.Act1
+python main.py --mode test --game SonicTheHedgehog2-Genesis --level EmeraldHillZone.Act1
+python main.py --mode test --game SonicAndKnuckles3-Genesis --level AngelIslandZone.Act1
 ```
 
 
