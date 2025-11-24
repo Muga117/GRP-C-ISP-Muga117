@@ -13,12 +13,6 @@ def test_agent(game="SonicAndKnuckles3-Genesis",state=None):
         state=state
     )])
     test_env = VecFrameStack(test_env, n_stack=4)      
-    #test_env = VecVideoRecorder(
-        #test_env,
-        #video_folder=VIDEOS_PATH,
-        #record_video_trigger=lambda x: x == 0, 
-        #video_length=20000                   
-    #)
 
     print("Testing trained agent...")
     model = PPO.load(MODEL_PATH)
