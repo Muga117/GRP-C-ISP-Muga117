@@ -1,17 +1,7 @@
 
-import random
-from paths import VIDEOS_PATH
-from wrappers import AllowBacktracking, RewardScaler, SonicDiscretizer, StochasticFrameSkip, WarpFrame, RandomLevelWrapper
+from wrappers import AllowBacktracking, RewardScaler, SonicDiscretizer, StochasticFrameSkip, WarpFrame
 from gymnasium.wrappers import TimeLimit
 import retro
-import numpy as np
-
-ZONES = [
-    "AngelIslandZone.Act1",
-    "MarbleGardenZone.Act1",
-    "HydrocityZone.Act1",
-    "MushroomHillZone.Act1",
-]
 
 GAME_TO_ZONES = {
     "SonicTheHedgehog-Genesis": [
@@ -54,10 +44,8 @@ def make_train_env(zone, render_mode):
     env = make_env(state=zone, render_mode=render_mode)
     return wrap_env(env)
 
-def make_test_env():
-    #game = "SonicTheHedgehog-Genesis"
-    #game = "SonicTheHedgehog2-Genesis"
-    game = "SonicAndKnuckles3-Genesis"
-    state = GAME_TO_ZONES[game][0]
+def make_test_env(game="SonicAndKnuckles3-Genesis",state=None):
+    game = game
+    state = state
     env = make_env(game=game, state=state, render_mode="human")
     return wrap_env(env)
