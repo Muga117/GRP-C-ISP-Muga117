@@ -1,17 +1,15 @@
 import os
-import numpy as np
 from stable_baselines3 import PPO
-from env import GAME_TO_ZONES, ZONES, make_train_env, wrap_env, make_env
-from paths import MODEL_PATH, VECNORM_PATH, LOGS_PATH
+from env import GAME_TO_ZONES, wrap_env, make_env
+from paths import MODEL_PATH, LOGS_PATH
 from callbacks import SingleCheckpointCallback
-from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import (
     SubprocVecEnv,
     VecFrameStack,
     VecMonitor
 )
 
-def train_agent(total_timesteps=10_000_000):
+def train_agent(total_timesteps=5_000_000):
     env_fns = []
     for game, zones in GAME_TO_ZONES.items():
         for zone in zones:

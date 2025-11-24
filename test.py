@@ -1,18 +1,17 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import (
-    SubprocVecEnv,
     VecFrameStack,
-    VecVideoRecorder,
     DummyVecEnv,
-    VecNormalize
 )
-from paths import MODEL_PATH, VIDEOS_PATH
+from paths import MODEL_PATH
 from env import make_test_env
-import os
 
-def test_agent():
+def test_agent(game="SonicAndKnuckles3-Genesis",state=None):
     print("Creating Test Environment...")
-    test_env = DummyVecEnv([lambda: make_test_env()])
+    test_env = DummyVecEnv([lambda: make_test_env(
+        game=game,
+        state=state
+    )])
     test_env = VecFrameStack(test_env, n_stack=4)      
     #test_env = VecVideoRecorder(
         #test_env,
