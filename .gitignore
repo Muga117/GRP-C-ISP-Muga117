@@ -1,0 +1,9 @@
+ROM/
+
+logs/
+
+__pycache__/
+
+ppo_sonic3.zip
+
+videos/
